@@ -1,7 +1,8 @@
 import sqlite3
 import os
 
-DATABASE = "database/database.db"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATABASE = os.path.join(BASE_DIR, "database", "database.db")
 
 CITY_COORDINATES = {
     "Mumbai": [19.0760, 72.8777],
@@ -20,7 +21,7 @@ CITY_COORDINATES = {
 
 
 def create_database():
-    os.makedirs("database", exist_ok=True)
+    os.makedirs(os.path.dirname(DATABASE), exist_ok=True)
 
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()

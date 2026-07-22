@@ -15,28 +15,47 @@ from flask import (
     send_file
 )
 
-from credit_card_fraud_detection_dashboard.database.db import (
-    create_database,
-    dashboard_counts,
-    get_recent_transactions,
-    get_paginated_transactions,
-    get_transaction_by_id,
-    get_customer_history,
-    get_analytics_data,
-    insert_prediction,
-    get_all_rules,
-    insert_rule,
-    delete_rule,
-    toggle_rule,
-    get_geo_fraud_points
-)
-
-from credit_card_fraud_detection_dashboard.ml.prediction import predict_transaction
-from credit_card_fraud_detection_dashboard.ml.risk_engine import calculate_risk
-from credit_card_fraud_detection_dashboard.ml.xai_engine import explain_transaction
+try:
+    from credit_card_fraud_detection_dashboard.database.db import (
+        create_database,
+        dashboard_counts,
+        get_recent_transactions,
+        get_paginated_transactions,
+        get_transaction_by_id,
+        get_customer_history,
+        get_analytics_data,
+        insert_prediction,
+        get_all_rules,
+        insert_rule,
+        delete_rule,
+        toggle_rule,
+        get_geo_fraud_points
+    )
+    from credit_card_fraud_detection_dashboard.ml.prediction import predict_transaction
+    from credit_card_fraud_detection_dashboard.ml.risk_engine import calculate_risk
+    from credit_card_fraud_detection_dashboard.ml.xai_engine import explain_transaction
+except ModuleNotFoundError:
+    from database.db import (
+        create_database,
+        dashboard_counts,
+        get_recent_transactions,
+        get_paginated_transactions,
+        get_transaction_by_id,
+        get_customer_history,
+        get_analytics_data,
+        insert_prediction,
+        get_all_rules,
+        insert_rule,
+        delete_rule,
+        toggle_rule,
+        get_geo_fraud_points
+    )
+    from ml.prediction import predict_transaction
+    from ml.risk_engine import calculate_risk
+    from ml.xai_engine import explain_transaction
 
 app = Flask(__name__)
-app.secret_key = "creditcardfraud_industry_level_secret_key"
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "creditcardfraud_industry_level_secret_key")
 
 create_database()
 
@@ -469,4 +488,5 @@ def export_data():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", "5000"))
+    app.run(debug=False, host="0.0.0.0", port=port)

@@ -2,6 +2,9 @@ import pandas as pd
 import joblib
 import os
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODELS_DIR = os.path.join(BASE_DIR, "models")
+
 # Lazy loading placeholders
 dt_model = None
 lr_model = None
@@ -14,13 +17,13 @@ scaler = None
 def load_resources():
     global dt_model, lr_model, rf_model, iso_model, encoders, scaler
     if dt_model is None:
-        dt_model = joblib.load("models/decision_tree.pkl")
-        lr_model = joblib.load("models/logistic.pkl")
-        rf_model = joblib.load("models/random_forest.pkl")
-        if os.path.exists("models/isolation_forest.pkl"):
-            iso_model = joblib.load("models/isolation_forest.pkl")
-        encoders = joblib.load("models/label_encoders.pkl")
-        scaler = joblib.load("models/scaler.pkl")
+        dt_model = joblib.load(os.path.join(MODELS_DIR, "decision_tree.pkl"))
+        lr_model = joblib.load(os.path.join(MODELS_DIR, "logistic.pkl"))
+        rf_model = joblib.load(os.path.join(MODELS_DIR, "random_forest.pkl"))
+        if os.path.exists(os.path.join(MODELS_DIR, "isolation_forest.pkl")):
+            iso_model = joblib.load(os.path.join(MODELS_DIR, "isolation_forest.pkl"))
+        encoders = joblib.load(os.path.join(MODELS_DIR, "label_encoders.pkl"))
+        scaler = joblib.load(os.path.join(MODELS_DIR, "scaler.pkl"))
 
 
 def predict_transaction(data):

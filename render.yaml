@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: credit-card-fraud-dashboard
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.0
+      - key: FLASK_SECRET_KEY
+        value: creditcardfraud_industry_level_secret_key

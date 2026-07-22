@@ -1,0 +1,193 @@
+{% extends 'layout.html' %}
+
+{% block title %}Transaction Simulator - AI FraudGuard{% endblock %}
+
+{% block header_title %}Live Transaction Simulator{% endblock %}
+
+{% block content %}
+<div class="row g-4 justify-content-center">
+    <div class="col-xl-9 col-lg-10">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header border-0 bg-transparent py-3">
+                <h5 class="card-title fw-bold mb-0 text-body">
+                    <i class="fa-solid fa-plus text-primary me-2"></i>Simulate Live Transaction
+                </h5>
+                <p class="text-muted small mb-0">Input transaction attributes to evaluate risk and run prediction against our AI models.</p>
+            </div>
+            
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('new_transaction') }}">
+                    <h6 class="fw-bold mb-3 border-bottom pb-2 text-primary"><i class="fa-solid fa-user me-2"></i>Customer Profile</h6>
+                    <div class="row g-3 mb-4">
+                        <!-- Customer ID -->
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Customer ID</label>
+                            <input type="text" name="customer_id" class="form-control font-monospace" placeholder="CUST1050" required value="CUST{{ range(1000, 9999)|random }}">
+                        </div>
+                        
+                        <!-- Customer Age -->
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Customer Age</label>
+                            <input type="number" name="customer_age" class="form-control" placeholder="35" min="18" max="100" required value="38">
+                        </div>
+                        
+                        <!-- Gender -->
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Gender</label>
+                            <select name="gender" class="form-select" required>
+                                <option value="M">Male</option>
+                                <option value="F">Female</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-3 border-bottom pb-2 text-primary"><i class="fa-solid fa-credit-card me-2"></i>Payment Details</h6>
+                    <div class="row g-3 mb-4">
+                        <!-- Card Number -->
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Card Number (16 Digits)</label>
+                            <input type="text" name="card_number" class="form-control font-monospace" placeholder="4111222233334444" pattern="\d{16}" required value="411155{{ range(100000, 999999)|random }}{{ range(1000, 9999)|random }}">
+                        </div>
+                        
+                        <!-- Amount -->
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Amount ($)</label>
+                            <input type="number" step="0.01" name="amount" class="form-control" placeholder="150.00" min="0.01" required value="125.50">
+                        </div>
+
+                        <!-- Card Present -->
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Card Present?</label>
+                            <select name="card_present" class="form-select" required>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No (CNP)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-3 border-bottom pb-2 text-primary"><i class="fa-solid fa-store me-2"></i>Merchant & Geography</h6>
+                    <div class="row g-3 mb-4">
+                        <!-- Merchant Category -->
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Merchant Category</label>
+                            <select name="merchant_category" class="form-select" required>
+                                <option value="Retail">Retail</option>
+                                <option value="Online Shopping">Online Shopping</option>
+                                <option value="Grocery">Grocery</option>
+                                <option value="Gas Station">Gas Station</option>
+                                <option value="Restaurant">Restaurant</option>
+                                <option value="Travel">Travel</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Services">Services</option>
+                                <option value="Health">Health</option>
+                            </select>
+                        </div>
+
+                        <!-- Device Type -->
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Device Type</label>
+                            <select name="device_type" class="form-select" required>
+                                <option value="Mobile">Mobile</option>
+                                <option value="Desktop">Desktop</option>
+                                <option value="Tablet">Tablet</option>
+                                <option value="Smart Watch">Smart Watch</option>
+                            </select>
+                        </div>
+
+                        <!-- CVV Matched -->
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">CVV Matched?</label>
+                            <select name="cvv_matched" class="form-select" required>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+
+                        <!-- Country -->
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Country</label>
+                            <select name="country" class="form-select" id="countrySelect" required>
+                                <option value="United States">United States</option>
+                                <option value="Canada">Canada</option>
+                                <option value="United Kingdom">United Kingdom</option>
+                                <option value="Mexico">Mexico</option>
+                                <option value="Germany">Germany</option>
+                                <option value="France">France</option>
+                                <option value="Japan">Japan</option>
+                            </select>
+                        </div>
+
+                        <!-- City -->
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">City</label>
+                            <input type="text" name="city" class="form-control" placeholder="New York" required value="New York">
+                        </div>
+
+                        <!-- State -->
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">State (US only)</label>
+                            <input type="text" name="state" id="stateInput" class="form-control" placeholder="NY" value="NY">
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-3 border-bottom pb-2 text-primary"><i class="fa-solid fa-clock-rotate-left me-2"></i>Contextual History</h6>
+                    <div class="row g-3 mb-4">
+                        <!-- International -->
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">International Transaction?</label>
+                            <select name="international_transaction" class="form-select" required>
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+
+                        <!-- Daily Count -->
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Daily Transactions (Last 24h)</label>
+                            <input type="number" name="daily_transaction_count" class="form-control" min="1" max="100" required value="2">
+                        </div>
+
+                        <!-- Previous Fraud -->
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Prior Fraud Flag Count</label>
+                            <input type="number" name="previous_fraud_count" class="form-control" min="0" max="10" required value="0">
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end border-top pt-3">
+                        <button type="reset" class="btn btn-outline-secondary rounded-pill px-4">Clear Form</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4"><i class="fa-solid fa-bolt me-2"></i>Run AI Risk Analysis</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const countrySelect = document.getElementById('countrySelect');
+    const stateInput = document.getElementById('stateInput');
+
+    countrySelect.addEventListener('change', () => {
+        if (countrySelect.value !== 'United States') {
+            stateInput.value = 'N/A';
+            stateInput.setAttribute('disabled', 'true');
+        } else {
+            stateInput.value = 'NY';
+            stateInput.removeAttribute('disabled');
+        }
+    });
+});
+</script>
+{% block head %}
+<style>
+.form-label {
+    margin-bottom: 0.25rem;
+}
+</style>
+{% endblock %}
+{% endblock %}

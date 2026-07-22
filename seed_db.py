@@ -4,9 +4,9 @@ import random
 import pandas as pd
 from datetime import datetime, timedelta
 
-from database.db import DATABASE, create_database, insert_prediction
-from ml.prediction import predict_transaction
-from ml.risk_engine import calculate_risk
+from credit_card_fraud_detection_dashboard.database.db import DATABASE, create_database, insert_prediction
+from credit_card_fraud_detection_dashboard.ml.prediction import predict_transaction
+from credit_card_fraud_detection_dashboard.ml.risk_engine import calculate_risk
 
 DATASET_PATH = "dataset/historical_transactions.csv"
 

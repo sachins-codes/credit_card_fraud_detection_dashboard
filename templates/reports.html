@@ -1,0 +1,375 @@
+{% extends 'layout.html' %}
+
+{% block title %}Risk Analysis Reports - AI FraudGuard{% endblock %}
+
+{% block header_title %}System Analytics & Risk Reports{% endblock %}
+
+{% block content %}
+<!-- PDF / Print Header -->
+<div class="d-flex justify-content-between align-items-center mb-4 d-print-none">
+    <h5 class="fw-bold mb-0 text-muted"><i class="fa-solid fa-chart-pie me-2"></i>Executive Summary Visuals</h5>
+    <button onclick="window.print();" class="btn btn-outline-primary rounded-pill px-4">
+        <i class="fa-solid fa-print me-2"></i>Print Executive Report
+    </button>
+</div>
+
+<!-- Charts Grid -->
+<div class="row g-4 mb-4">
+    <!-- 9. Fraud Percentage Pie Chart & 4. Risk Level Distribution Donut -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 bg-transparent py-3">
+                <h5 class="card-title fw-bold mb-0 text-body">Fraud Ratio & Risk Distribution</h5>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center">
+                <div class="row align-items-center g-3">
+                    <div class="col-sm-6 text-center">
+                        <small class="text-muted fw-semibold mb-2 d-block">Fraud Ratio (%)</small>
+                        <div id="chart-fraud-percentage" style="min-height: 250px;"></div>
+                    </div>
+                    <div class="col-sm-6 text-center">
+                        <small class="text-muted fw-semibold mb-2 d-block">Risk Level (Fraud Cases)</small>
+                        <div id="chart-risk-level" style="min-height: 250px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 10. Model Accuracy Comparison -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 bg-transparent py-3">
+                <h5 class="card-title fw-bold mb-0 text-body">Model Accuracy Comparison</h5>
+            </div>
+            <div class="card-body">
+                <div id="chart-model-accuracy" style="min-height: 250px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Daily Fraud Trends (Counts & Amounts) -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header border-0 bg-transparent py-3">
+                <h5 class="card-title fw-bold mb-0 text-body">Daily Fraud Trends (Last 15 Days)</h5>
+            </div>
+            <div class="card-body">
+                <div id="chart-fraud-trends" style="min-height: 350px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. Fraud ID vs Risk Score (Bar Chart) -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 bg-transparent py-3">
+                <h5 class="card-title fw-bold mb-0 text-body">Fraud Cases vs Risk Score</h5>
+            </div>
+            <div class="card-body">
+                <div id="chart-id-risk" style="min-height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Fraud ID vs Transaction Amount (Bar Chart) -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 bg-transparent py-3">
+                <h5 class="card-title fw-bold mb-0 text-body">Fraud Cases vs Amount</h5>
+            </div>
+            <div class="card-body">
+                <div id="chart-id-amount" style="min-height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Fraud Amount Distribution -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 bg-transparent py-3">
+                <h5 class="card-title fw-bold mb-0 text-body">Fraud Amount Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div id="chart-amount-dist" style="min-height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. Merchant-wise Fraud -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 bg-transparent py-3">
+                <h5 class="card-title fw-bold mb-0 text-body">Top Merchant Categories (Fraud cases)</h5>
+            </div>
+            <div class="card-body">
+                <div id="chart-merchant-fraud" style="min-height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. City-wise Fraud -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 bg-transparent py-3">
+                <h5 class="card-title fw-bold mb-0 text-body">Top Fraud Locations (Cities)</h5>
+            </div>
+            <div class="card-body">
+                <div id="chart-city-fraud" style="min-height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Top 10 High-Risk Transactions (Table) -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 bg-transparent py-3">
+                <h5 class="card-title fw-bold mb-0 text-body">Top 10 High-Risk Active Alert cases</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 text-nowrap">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Txn ID</th>
+                                <th>Cust ID</th>
+                                <th>Amount</th>
+                                <th>Risk Score</th>
+                                <th>Level</th>
+                                <th class="pe-3">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top-risk-table-body">
+                            <!-- Populated dynamically via JS -->
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">Loading high risk records...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // API endpoint
+    const apiUri = '/api/analytics';
+    
+    // Store instances for re-rendering on theme changes
+    let chartInstances = {};
+    
+    // Theme options
+    let currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+    
+    // Fetch and build
+    fetch(apiUri)
+        .then(response => response.json())
+        .then(data => {
+            renderAllCharts(data);
+            populateTopRiskTable(data.top_10_high_risk);
+        })
+        .catch(err => {
+            console.error("Error loading analytics data:", err);
+        });
+
+    window.addEventListener('themeChanged', (e) => {
+        currentTheme = e.detail.theme;
+        // Re-theme active charts
+        Object.values(chartInstances).forEach(chart => {
+            chart.updateOptions({
+                theme: { mode: currentTheme }
+            });
+        });
+    });
+
+    function populateTopRiskTable(records) {
+        const tbody = document.getElementById('top-risk-table-body');
+        if (!records || records.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No high-risk transactions.</td></tr>`;
+            return;
+        }
+        
+        let html = '';
+        records.forEach(r => {
+            let levelClass = 'bg-success';
+            if (r.risk_score >= 90) levelClass = 'bg-danger';
+            else if (r.risk_score >= 70) levelClass = 'bg-warning text-dark';
+            else if (r.risk_score >= 40) levelClass = 'bg-info text-dark';
+            
+            let statusClass = 'bg-success-subtle text-success';
+            if (r.status === 'Blocked') statusClass = 'bg-danger-subtle text-danger';
+            else if (r.status === 'Under Review') statusClass = 'bg-warning-subtle text-warning';
+
+            html += `
+                <tr>
+                    <td class="ps-3 fw-bold">
+                        <a href="/investigate/${r.transaction_id}" class="text-decoration-none text-danger-emphasis">${r.transaction_id}</a>
+                    </td>
+                    <td>${r.customer_id}</td>
+                    <td class="fw-bold">$${r.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td><span class="fw-semibold">${r.risk_score}</span></td>
+                    <td><span class="badge ${levelClass}">${r.risk_level}</span></td>
+                    <td class="pe-3"><span class="badge ${statusClass}">${r.status}</span></td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+    }
+
+    function renderAllCharts(data) {
+        const primaryColor = '#0d6efd';
+        const dangerColor = '#dc3545';
+        const warningColor = '#ffc107';
+        const successColor = '#198754';
+        const infoColor = '#0dcaf0';
+
+        // 9. Fraud Percentage Pie
+        const fraudPercentageOptions = {
+            chart: { type: 'pie', height: 220, toolbar: { show: false } },
+            labels: ['Genuine', 'Fraud'],
+            series: [data.counts.genuine, data.counts.fraud],
+            colors: [successColor, dangerColor],
+            dataLabels: { enabled: true, formatter: (val) => `${val.toFixed(1)}%` },
+            legend: { position: 'bottom' },
+            theme: { mode: currentTheme }
+        };
+        chartInstances.fraudPie = new ApexCharts(document.getElementById('chart-fraud-percentage'), fraudPercentageOptions);
+        chartInstances.fraudPie.render();
+
+        // 4. Risk Level Distribution Donut
+        const riskLevelData = data.risk_level_distribution;
+        const riskLabels = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+        const riskSeries = riskLabels.map(label => riskLevelData[label] || 0);
+
+        const riskLevelOptions = {
+            chart: { type: 'donut', height: 220, toolbar: { show: false } },
+            labels: ['Low', 'Medium', 'High', 'Critical'],
+            series: riskSeries,
+            colors: [successColor, infoColor, warningColor, dangerColor],
+            legend: { position: 'bottom' },
+            theme: { mode: currentTheme }
+        };
+        chartInstances.riskDonut = new ApexCharts(document.getElementById('chart-risk-level'), riskLevelOptions);
+        chartInstances.riskDonut.render();
+
+        // 10. Model Accuracy Comparison
+        const accuracyOptions = {
+            chart: { type: 'bar', height: 220, toolbar: { show: false } },
+            series: [{
+                name: 'Accuracy Score (%)',
+                data: [data.accuracies.random_forest, data.accuracies.decision_tree, data.accuracies.logistic_regression]
+            }],
+            plotOptions: { bar: { columnWidth: '45%', distributed: true, borderRadius: 6 } },
+            colors: [successColor, primaryColor, infoColor],
+            xaxis: { categories: ['Random Forest', 'Decision Tree', 'Logistic Reg.'] },
+            yaxis: { max: 100, min: 80 },
+            legend: { show: false },
+            theme: { mode: currentTheme }
+        };
+        chartInstances.accuracyChart = new ApexCharts(document.getElementById('chart-model-accuracy'), accuracyOptions);
+        chartInstances.accuracyChart.render();
+
+        // 6. Daily Fraud Trends (Counts & Amounts)
+        const trendDates = data.daily_trends.map(t => t.date);
+        const trendCounts = data.daily_trends.map(t => t.count);
+        const trendAmounts = data.daily_trends.map(t => t.amount);
+
+        const trendOptions = {
+            chart: { height: 350, type: 'area', toolbar: { show: true } },
+            series: [
+                { name: 'Fraud Cases Count', type: 'column', data: trendCounts },
+                { name: 'Total Fraud Value ($)', type: 'area', data: trendAmounts }
+            ],
+            xaxis: { categories: trendDates, type: 'datetime' },
+            yaxis: [
+                { title: { text: 'Fraud Count' }, seriesName: 'Fraud Cases Count' },
+                { title: { text: 'Fraud Value ($)' }, opponent: true, seriesName: 'Total Fraud Value ($)', labels: { formatter: (v) => `$${v.toLocaleString()}` } }
+            ],
+            stroke: { width: [0, 3], curve: 'smooth' },
+            colors: [warningColor, dangerColor],
+            fill: { opacity: [0.85, 0.25] },
+            theme: { mode: currentTheme }
+        };
+        chartInstances.trendsChart = new ApexCharts(document.getElementById('chart-fraud-trends'), trendOptions);
+        chartInstances.trendsChart.render();
+
+        // 1. Fraud ID vs Risk Score (Bar Chart)
+        const topScores = data.top_score_cases.map(c => c.risk_score);
+        const topScoreIDs = data.top_score_cases.map(c => c.transaction_id);
+
+        const idRiskOptions = {
+            chart: { type: 'bar', height: 300, toolbar: { show: false } },
+            series: [{ name: 'Risk Score', data: topScores }],
+            xaxis: { categories: topScoreIDs, labels: { rotate: -45 } },
+            plotOptions: { bar: { borderRadius: 4 } },
+            colors: [dangerColor],
+            theme: { mode: currentTheme }
+        };
+        chartInstances.idRiskChart = new ApexCharts(document.getElementById('chart-id-risk'), idRiskOptions);
+        chartInstances.idRiskChart.render();
+
+        // 2. Fraud ID vs Transaction Amount (Bar Chart)
+        const topAmounts = data.top_score_cases.map(c => c.amount);
+
+        const idAmountOptions = {
+            chart: { type: 'bar', height: 300, toolbar: { show: false } },
+            series: [{ name: 'Amount ($)', data: topAmounts }],
+            xaxis: { categories: topScoreIDs, labels: { rotate: -45 } },
+            plotOptions: { bar: { borderRadius: 4 } },
+            colors: [primaryColor],
+            yaxis: { labels: { formatter: (v) => `$${v.toLocaleString()}` } },
+            theme: { mode: currentTheme }
+        };
+        chartInstances.idAmountChart = new ApexCharts(document.getElementById('chart-id-amount'), idAmountOptions);
+        chartInstances.idAmountChart.render();
+
+        // 3. Fraud Amount Distribution
+        const amtLabels = Object.keys(data.amount_distribution);
+        const amtCounts = Object.values(data.amount_distribution);
+
+        const amtDistOptions = {
+            chart: { type: 'bar', height: 300, toolbar: { show: false } },
+            series: [{ name: 'Alert Count', data: amtCounts }],
+            xaxis: { categories: amtLabels },
+            plotOptions: { bar: { horizontal: true, borderRadius: 4 } },
+            colors: [infoColor],
+            theme: { mode: currentTheme }
+        };
+        chartInstances.amtDistChart = new ApexCharts(document.getElementById('chart-amount-dist'), amtDistOptions);
+        chartInstances.amtDistChart.render();
+
+        // 7. Merchant-wise Fraud
+        const merchantLabels = data.merchant_fraud.map(m => m.merchant_category);
+        const merchantCounts = data.merchant_fraud.map(m => m.count);
+
+        const merchantOptions = {
+            chart: { type: 'bar', height: 300, toolbar: { show: false } },
+            series: [{ name: 'Cases Count', data: merchantCounts }],
+            xaxis: { categories: merchantLabels, labels: { rotate: -45, hideOverlappingLabels: false } },
+            colors: [warningColor],
+            theme: { mode: currentTheme }
+        };
+        chartInstances.merchantChart = new ApexCharts(document.getElementById('chart-merchant-fraud'), merchantOptions);
+        chartInstances.merchantChart.render();
+
+        // 8. City-wise Fraud
+        const cityLabels = data.city_fraud.map(c => c.city);
+        const cityCounts = data.city_fraud.map(c => c.count);
+
+        const cityOptions = {
+            chart: { type: 'bar', height: 300, toolbar: { show: false } },
+            series: [{ name: 'Cases Count', data: cityCounts }],
+            xaxis: { categories: cityLabels, labels: { rotate: -45 } },
+            colors: [infoColor],
+            theme: { mode: currentTheme }
+        };
+        chartInstances.cityChart = new ApexCharts(document.getElementById('chart-city-fraud'), cityOptions);
+        chartInstances.cityChart.render();
+    }
+});
+</script>
+{% endblock %}

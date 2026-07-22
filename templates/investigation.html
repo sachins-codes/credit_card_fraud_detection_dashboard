@@ -1,0 +1,283 @@
+{% extends 'layout.html' %}
+
+{% block title %}Investigation - {{ txn.transaction_id }} - AI FraudGuard{% endblock %}
+
+{% block header_title %}Transaction Audit & XAI Intelligence{% endblock %}
+
+{% block content %}
+<!-- Back button & Print Action -->
+<div class="d-flex justify-content-between align-items-center mb-4 d-print-none">
+    <a href="{{ url_for('fraudids') }}" class="btn btn-outline-secondary rounded-pill">
+        <i class="fa-solid fa-arrow-left me-2"></i>Back to Fraud IDs
+    </a>
+    <button onclick="window.print();" class="btn btn-primary rounded-pill px-4">
+        <i class="fa-solid fa-print me-2"></i>Print Official Audit Dossier
+    </button>
+</div>
+
+<!-- Printable Header (Visible only when printing) -->
+<div class="d-none d-print-block mb-4 text-center">
+    <h2 class="fw-bold"><i class="fa-solid fa-shield-halved text-primary me-2"></i>AI FraudGuard - Official Audit Dossier</h2>
+    <p class="text-muted">Report Verification Timestamp: <span id="reportTime"></span></p>
+    <script>document.getElementById('reportTime').innerText = new Date().toLocaleString();</script>
+    <hr>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Transaction & Customer Details -->
+    <div class="col-xl-7 col-lg-6">
+        <!-- Transaction Details Card -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header border-0 bg-transparent py-3">
+                <h5 class="card-title fw-bold mb-0 text-body">
+                    <i class="fa-solid fa-receipt text-primary me-2"></i>Transaction Parameters
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <small class="text-muted d-block">Transaction ID</small>
+                        <span class="fw-bold text-body fs-5">{{ txn.transaction_id }}</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <small class="text-muted d-block">Customer ID</small>
+                        <span class="fw-bold text-body fs-5">{{ txn.customer_id }}</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <small class="text-muted d-block">Card Number (Masked)</small>
+                        <span class="text-body fw-semibold font-monospace"><code>{{ txn.card_number }}</code></span>
+                    </div>
+                    <div class="col-sm-6">
+                        <small class="text-muted d-block">Transaction Timestamp</small>
+                        <span class="text-body fw-semibold">{{ txn.created_at }}</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <small class="text-muted d-block">Merchant Category</small>
+                        <span class="text-body fw-semibold"><i class="fa-solid fa-store text-muted me-1"></i>{{ txn.merchant_category }}</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <small class="text-muted d-block">Amount</small>
+                        <span class="fw-extrabold text-danger fs-4">${{ "{:,.2f}".format(txn.amount) }}</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <small class="text-muted d-block">Device Type</small>
+                        <span class="text-body fw-semibold">
+                            {% if txn.device_type == 'Mobile' %}
+                                <i class="fa-solid fa-mobile-screen text-muted me-1"></i>Mobile
+                            {% elif txn.device_type == 'Desktop' %}
+                                <i class="fa-solid fa-laptop text-muted me-1"></i>Desktop
+                            {% else %}
+                                <i class="fa-solid fa-tablet text-muted me-1"></i>Tablet/Watch
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="col-sm-6">
+                        <small class="text-muted d-block">Location</small>
+                        <span class="text-body fw-semibold">
+                            <i class="fa-solid fa-location-dot text-muted me-1"></i>{{ txn.city }}{% if txn.state and txn.state != 'N/A' %}, {{ txn.state }}{% endif %}, {{ txn.country }}
+                        </span>
+                    </div>
+                    
+                    <hr class="my-3">
+                    
+                    <div class="col-sm-4">
+                        <small class="text-muted d-block">Card Present?</small>
+                        {% if txn.card_present == 'Yes' %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">Yes</span>
+                        {% else %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">No (CNP)</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-sm-4">
+                        <small class="text-muted d-block">CVV Matched?</small>
+                        {% if txn.cvv_matched == 'Yes' %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">Yes</span>
+                        {% else %}
+                            <span class="badge bg-danger text-white">No Match</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-sm-4">
+                        <small class="text-muted d-block">International?</small>
+                        {% if txn.international_transaction == 'Yes' %}
+                            <span class="badge bg-warning text-dark"><i class="fa-solid fa-globe me-1"></i>Yes</span>
+                        {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">No</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer History Card -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header border-0 bg-transparent py-3">
+                <h5 class="card-title fw-bold mb-0 text-body">
+                    <i class="fa-solid fa-history text-primary me-2"></i>Customer Transaction History
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Txn ID</th>
+                                <th>Amount</th>
+                                <th>Merchant Category</th>
+                                <th>Prediction</th>
+                                <th>Risk Score</th>
+                                <th class="pe-4">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if customer_history %}
+                                {% for past in customer_history %}
+                                    <tr {% if past.prediction == 'Fraud' %}class="table-danger-subtle"{% endif %}>
+                                        <td class="ps-4">
+                                            {% if past.prediction == 'Fraud' %}
+                                                <a href="{{ url_for('investigate', transaction_id=past.transaction_id) }}" class="fw-semibold text-danger-emphasis">{{ past.transaction_id }}</a>
+                                            {% else %}
+                                                {{ past.transaction_id }}
+                                            {% endif %}
+                                        </td>
+                                        <td class="fw-semibold">${{ "{:,.2f}".format(past.amount) }}</td>
+                                        <td>{{ past.merchant_category }}</td>
+                                        <td>
+                                            {% if past.prediction == 'Fraud' %}
+                                                <span class="badge bg-danger">Fraud</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Genuine</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="fw-semibold">{{ past.risk_score }}</td>
+                                        <td class="pe-4 text-muted small">{{ past.created_at.split(' ')[0] }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">No prior transaction logs found for this customer.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: AI Risk Scoring & XAI Breakdown -->
+    <div class="col-xl-5 col-lg-6">
+        <!-- Risk Metrics Card -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header border-0 bg-transparent py-3">
+                <h5 class="card-title fw-bold mb-0 text-body">
+                    <i class="fa-solid fa-brain text-primary me-2"></i>AI Risk Evaluation
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <small class="text-muted d-block fw-semibold uppercase mb-1">CUMULATIVE RISK SCORE</small>
+                    <div class="d-inline-block position-relative my-2">
+                        <span class="display-3 fw-black text-body">{{ txn.risk_score }}</span><span class="fs-4 text-muted">/100</span>
+                    </div>
+                    
+                    <div class="progress rounded-pill my-3 mx-auto" style="height: 12px; max-width: 80%;">
+                        {% set color = 'bg-success' %}
+                        {% if txn.risk_score >= 90 %}
+                            {% set color = 'bg-danger' %}
+                        {% elif txn.risk_score >= 70 %}
+                            {% set color = 'bg-warning' %}
+                        {% elif txn.risk_score >= 40 %}
+                            {% set color = 'bg-info' %}
+                        {% endif %}
+                        <div class="progress-bar {{ color }}" role="progressbar" style="width: {{ txn.risk_score }}%"></div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-center gap-3 mb-4">
+                    <div class="text-center">
+                        <small class="text-muted d-block mb-1">Risk Level</small>
+                        {% if txn.risk_level == 'CRITICAL' %}
+                            <span class="badge bg-danger fs-6 px-3 py-2"><i class="fa-solid fa-skull me-1"></i>Critical</span>
+                        {% elif txn.risk_level == 'HIGH' %}
+                            <span class="badge bg-warning text-dark fs-6 px-3 py-2"><i class="fa-solid fa-triangle-exclamation me-1"></i>High</span>
+                        {% elif txn.risk_level == 'MEDIUM' %}
+                            <span class="badge bg-info text-dark fs-6 px-3 py-2"><i class="fa-solid fa-circle-info me-1"></i>Medium</span>
+                        {% else %}
+                            <span class="badge bg-success fs-6 px-3 py-2"><i class="fa-solid fa-circle-check me-1"></i>Low</span>
+                        {% endif %}
+                    </div>
+                    <div class="text-center">
+                        <small class="text-muted d-block mb-1">Status</small>
+                        {% if txn.status == 'Blocked' %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-6 px-3 py-2"><i class="fa-solid fa-ban me-1"></i>Blocked</span>
+                        {% elif txn.status == 'Under Review' %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle fs-6 px-3 py-2"><i class="fa-solid fa-magnifying-glass me-1"></i>Under Review</span>
+                        {% else %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle fs-6 px-3 py-2"><i class="fa-solid fa-check me-1"></i>Approved</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Explainable AI (XAI) Feature Impact Progress Bars -->
+                <h6 class="fw-bold mb-3 text-body"><i class="fa-solid fa-diagram-project text-primary me-2"></i>Explainable AI (XAI) Feature Contribution</h6>
+                <div class="d-flex flex-column gap-3 mb-3">
+                    {% if xai_factors %}
+                        {% for factor in xai_factors %}
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center small mb-1">
+                                    <span class="text-body fw-semibold">{{ factor.feature }}</span>
+                                    <span class="fw-bold text-danger">{{ factor.impact }}%</span>
+                                </div>
+                                <div class="progress rounded-pill" style="height: 6px;">
+                                    <div class="progress-bar bg-danger" role="progressbar" style="width: {{ factor.impact }}%"></div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <small class="text-muted">Standard baseline transaction weights.</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Actionable AI Recommendation -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header border-0 bg-transparent py-3">
+                <h5 class="card-title fw-bold mb-0 text-body">
+                    <i class="fa-solid fa-wand-magic-sparkles text-primary me-2"></i>Triggered Rules & Recommendations
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6 class="fw-bold text-danger-emphasis mb-2">Triggered Security Rules:</h6>
+                <ul class="list-group list-group-flush mb-3">
+                    {% if txn.fraud_reason %}
+                        {% for reason in txn.fraud_reason.split(', ') %}
+                            <li class="list-group-item bg-transparent px-0 py-2 border-0 text-body small">
+                                <i class="fa-solid fa-triangle-exclamation text-danger me-2"></i>{{ reason }}
+                            </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="list-group-item bg-transparent px-0 py-2 border-0 text-muted small">No security rules triggered.</li>
+                    {% endif %}
+                </ul>
+
+                <div class="p-3 bg-danger-subtle text-danger-emphasis rounded-3 mb-3 border border-danger-subtle">
+                    <h6 class="fw-bold mb-1"><i class="fa-solid fa-shield me-2"></i>AI Security Recommendation</h6>
+                    <p class="small mb-0 fw-semibold">{{ txn.recommendation }}</p>
+                </div>
+
+                <div class="p-3 bg-body-tertiary rounded-3">
+                    <h6 class="fw-bold mb-2 text-body"><i class="fa-solid fa-user-shield me-2 text-primary"></i>Investigator Action Log</h6>
+                    <p class="small text-muted mb-2">Review location hop and CNP parameters before deciding.</p>
+                    <div class="d-flex gap-2 d-print-none">
+                        <button class="btn btn-sm btn-danger rounded-pill px-3" onclick="alert('Card blocked successfully.');">Block Card</button>
+                        <button class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="alert('Transaction approved.');">Approve Case</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

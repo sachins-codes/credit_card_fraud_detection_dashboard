@@ -12,7 +12,7 @@ from sklearn.metrics import (
     confusion_matrix
 )
 
-from ml.preprocessing import load_and_preprocess
+from credit_card_fraud_detection_dashboard.ml.preprocessing import load_and_preprocess
 
 DATASET_PATH = "dataset/historical_transactions.csv"
 MODEL_DIR = "models"

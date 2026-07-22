@@ -15,7 +15,7 @@ from flask import (
     send_file
 )
 
-from database.db import (
+from credit_card_fraud_detection_dashboard.database.db import (
     create_database,
     dashboard_counts,
     get_recent_transactions,
@@ -31,9 +31,9 @@ from database.db import (
     get_geo_fraud_points
 )
 
-from ml.prediction import predict_transaction
-from ml.risk_engine import calculate_risk
-from ml.xai_engine import explain_transaction
+from credit_card_fraud_detection_dashboard.ml.prediction import predict_transaction
+from credit_card_fraud_detection_dashboard.ml.risk_engine import calculate_risk
+from credit_card_fraud_detection_dashboard.ml.xai_engine import explain_transaction
 
 app = Flask(__name__)
 app.secret_key = "creditcardfraud_industry_level_secret_key"

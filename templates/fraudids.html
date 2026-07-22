@@ -1,0 +1,181 @@
+{% extends 'layout.html' %}
+
+{% block title %}Fraud Cases - AI FraudGuard India{% endblock %}
+
+{% block header_title %}Fraud Incident Ledger (INR ₹){% endblock %}
+
+{% block content %}
+<!-- Search & Filter Controls -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('fraudids') }}" class="row g-3 align-items-end">
+            <!-- Search Query -->
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label small fw-semibold">Search Query</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                    <input type="text" name="search" class="form-control border-start-0" placeholder="Txn ID, Customer, Card, City..." value="{{ search_query or '' }}">
+                </div>
+            </div>
+
+            <!-- Risk Level Filter -->
+            <div class="col-lg-2 col-md-3">
+                <label class="form-label small fw-semibold">Risk Level</label>
+                <select name="risk_level" class="form-select">
+                    <option value="">All Risk Levels</option>
+                    <option value="CRITICAL" {% if filters.risk_level == 'CRITICAL' %}selected{% endif %}>Critical</option>
+                    <option value="HIGH" {% if filters.risk_level == 'HIGH' %}selected{% endif %}>High</option>
+                    <option value="MEDIUM" {% if filters.risk_level == 'MEDIUM' %}selected{% endif %}>Medium</option>
+                    <option value="LOW" {% if filters.risk_level == 'LOW' %}selected{% endif %}>Low</option>
+                </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="col-lg-2 col-md-3">
+                <label class="form-label small fw-semibold">Action Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="Blocked" {% if filters.status == 'Blocked' %}selected{% endif %}>Blocked</option>
+                    <option value="Under Review" {% if filters.status == 'Under Review' %}selected{% endif %}>Under Review</option>
+                    <option value="Approved" {% if filters.status == 'Approved' %}selected{% endif %}>Approved</option>
+                </select>
+            </div>
+
+            <!-- Amount Min/Max -->
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label small fw-semibold">Amount Range (₹)</label>
+                <div class="input-group">
+                    <input type="number" name="min_amount" class="form-control" placeholder="Min ₹" value="{{ filters.min_amount or '' }}">
+                    <span class="input-group-text bg-transparent border-0">-</span>
+                    <input type="number" name="max_amount" class="form-control" placeholder="Max ₹" value="{{ filters.max_amount or '' }}">
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="col-lg-2 col-md-6 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100 rounded-pill"><i class="fa-solid fa-filter me-1"></i>Filter</button>
+                <a href="{{ url_for('fraudids') }}" class="btn btn-outline-secondary rounded-pill" title="Reset Filters"><i class="fa-solid fa-rotate"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Main Table Card -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header border-0 bg-transparent py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div>
+            <h5 class="card-title fw-bold mb-0 text-body">
+                <i class="fa-solid fa-shield-virus text-danger me-2"></i>Flagged Fraud Transactions
+            </h5>
+            <small class="text-muted">Showing {{ transactions|length }} of {{ "{:,}".format(total_count) }} incidents</small>
+        </div>
+        
+        <!-- Export buttons -->
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('export_data', format='csv', type='fraud', search=search_query, risk_level=filters.risk_level, status=filters.status, min_amount=filters.min_amount, max_amount=filters.max_amount) }}" class="btn btn-sm btn-outline-success rounded-pill">
+                <i class="fa-solid fa-file-csv me-1"></i>Export CSV
+            </a>
+            <a href="{{ url_for('export_data', format='excel', type='fraud', search=search_query, risk_level=filters.risk_level, status=filters.status, min_amount=filters.min_amount, max_amount=filters.max_amount) }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                <i class="fa-solid fa-file-excel me-1"></i>Export Excel
+            </a>
+        </div>
+    </div>
+    
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table align-middle table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Txn ID</th>
+                        <th>Customer ID</th>
+                        <th>Card Number</th>
+                        <th>Merchant</th>
+                        <th>Amount (₹)</th>
+                        <th>Risk Score</th>
+                        <th>Level</th>
+                        <th>Status</th>
+                        <th class="pe-4 text-end">Audit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if transactions %}
+                        {% for txn in transactions %}
+                            <tr class="table-danger-subtle">
+                                <td class="ps-4 fw-bold">
+                                    <a href="{{ url_for('investigate', transaction_id=txn.transaction_id) }}" class="text-decoration-none text-danger-emphasis">
+                                        {{ txn.transaction_id }}
+                                    </a>
+                                </td>
+                                <td>{{ txn.customer_id }}</td>
+                                <td><code>{{ txn.card_number }}</code></td>
+                                <td>{{ txn.merchant_category }}</td>
+                                <td class="fw-bold text-danger">₹{{ "{:,.2f}".format(txn.amount) }}</td>
+                                <td>
+                                    <span class="fw-bold">{{ txn.risk_score }}</span><small class="text-muted">/100</small>
+                                </td>
+                                <td>
+                                    {% if txn.risk_level == 'CRITICAL' %}
+                                        <span class="badge bg-danger"><i class="fa-solid fa-skull me-1"></i>Critical</span>
+                                    {% elif txn.risk_level == 'HIGH' %}
+                                        <span class="badge bg-warning text-dark"><i class="fa-solid fa-triangle-exclamation me-1"></i>High</span>
+                                    {% elif txn.risk_level == 'MEDIUM' %}
+                                        <span class="badge bg-info text-dark">Medium</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Low</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if txn.status == 'Blocked' %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Blocked</span>
+                                    {% elif txn.status == 'Under Review' %}
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Under Review</span>
+                                    {% else %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">Approved</span>
+                                    {% endif %}
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <a href="{{ url_for('investigate', transaction_id=txn.transaction_id) }}" class="btn btn-sm btn-danger rounded-pill px-3">
+                                        <i class="fa-solid fa-magnifying-glass me-1"></i>Investigate
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="9" class="text-center py-5 text-muted">
+                                <i class="fa-solid fa-folder-open fa-2x d-block mb-2 text-secondary"></i>
+                                No fraud records found matching search criteria.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Pagination Footer -->
+    {% if total_pages > 1 %}
+    <div class="card-footer bg-transparent border-0 py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <small class="text-muted">Page {{ page }} of {{ total_pages }}</small>
+        
+        <nav aria-label="Transaction pagination">
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('fraudids', page=page-1, search=search_query, risk_level=filters.risk_level, status=filters.status, min_amount=filters.min_amount, max_amount=filters.max_amount) }}">Previous</a>
+                </li>
+                
+                {% for p in range([1, page - 2]|max, [total_pages + 1, page + 3]|min) %}
+                    <li class="page-item {% if p == page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('fraudids', page=p, search=search_query, risk_level=filters.risk_level, status=filters.status, min_amount=filters.min_amount, max_amount=filters.max_amount) }}">{{ p }}</a>
+                    </li>
+                {% endfor %}
+                
+                <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('fraudids', page=page+1, search=search_query, risk_level=filters.risk_level, status=filters.status, min_amount=filters.min_amount, max_amount=filters.max_amount) }}">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,6 @@
+{
+    "decision_tree": 82.0,
+    "logistic_regression": 85.0,
+    "random_forest": 88.0,
+    "isolation_forest": 96.5
+}

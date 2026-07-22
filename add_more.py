@@ -2,9 +2,9 @@ import sqlite3
 import pandas as pd
 import random
 from datetime import datetime, timedelta
-from database.db import DATABASE
-from ml.prediction import predict_transaction
-from ml.risk_engine import calculate_risk
+from credit_card_fraud_detection_dashboard.database.db import DATABASE
+from credit_card_fraud_detection_dashboard.ml.prediction import predict_transaction
+from credit_card_fraud_detection_dashboard.ml.risk_engine import calculate_risk
 
 hist_df = pd.read_csv("dataset/historical_transactions.csv")
 hist_records = hist_df.to_dict(orient="records")

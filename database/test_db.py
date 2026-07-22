@@ -1,0 +1,3 @@
+from credit_card_fraud_detection_dashboard.database.db import create_database
+
+create_database()

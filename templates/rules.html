@@ -1,0 +1,140 @@
+{% extends 'layout.html' %}
+
+{% block title %}Security Policies - AI FraudGuard{% endblock %}
+
+{% block header_title %}Custom Security Policy Builder{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Policy Builder Form -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 bg-transparent py-3">
+                <h5 class="card-title fw-bold mb-0 text-body">
+                    <i class="fa-solid fa-plus text-primary me-2"></i>Create Security Policy
+                </h5>
+                <p class="text-muted small mb-0">Define automated fraud prevention policies evaluated during transaction checks.</p>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('rules') }}">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Policy Name</label>
+                        <input type="text" name="rule_name" class="form-control" placeholder="e.g., Block International High Value" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Target Attribute</label>
+                        <select name="condition_field" class="form-select" required>
+                            <option value="amount">Amount ($)</option>
+                            <option value="daily_transaction_count">Daily Transaction Count</option>
+                            <option value="previous_fraud_count">Previous Fraud Count</option>
+                            <option value="cvv_matched">CVV Matched (Yes/No)</option>
+                            <option value="international_transaction">International (Yes/No)</option>
+                            <option value="card_present">Card Present (Yes/No)</option>
+                        </select>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Operator</label>
+                            <select name="condition_operator" class="form-select" required>
+                                <option value=">=">&gt;= (Greater or equal)</option>
+                                <option value=">">&gt; (Greater than)</option>
+                                <option value="==">== (Equals)</option>
+                                <option value="<=">&lt;= (Less or equal)</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Threshold Value</label>
+                            <input type="text" name="condition_value" class="form-control" placeholder="e.g. 50000 or No" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold">Automated Action</label>
+                        <select name="action" class="form-select" required>
+                            <option value="BLOCK CARD">Block Card Immediately</option>
+                            <option value="HOLD & VERIFY">Hold & Verify Customer</option>
+                            <option value="MANUAL REVIEW">Flag for Manual Review</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill">
+                        <i class="fa-solid fa-shield-cat me-2"></i>Deploy Security Policy
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Policies Table -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 bg-transparent py-3">
+                <h5 class="card-title fw-bold mb-0 text-body">
+                    <i class="fa-solid fa-list-check text-primary me-2"></i>Active Security Policies
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Policy Name</th>
+                                <th>Condition</th>
+                                <th>Action Trigger</th>
+                                <th>Status</th>
+                                <th class="pe-4 text-end">Manage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if rules %}
+                                {% for r in rules %}
+                                    <tr>
+                                        <td class="ps-4 fw-bold text-body">
+                                            {{ r.rule_name }}
+                                        </td>
+                                        <td>
+                                            <code>IF {{ r.condition_field }} {{ r.condition_operator }} {{ r.condition_value }}</code>
+                                        </td>
+                                        <td>
+                                            {% if 'BLOCK' in r.action %}
+                                                <span class="badge bg-danger"><i class="fa-solid fa-ban me-1"></i>{{ r.action }}</span>
+                                            {% elif 'HOLD' in r.action %}
+                                                <span class="badge bg-warning text-dark"><i class="fa-solid fa-pause me-1"></i>{{ r.action }}</span>
+                                            {% else %}
+                                                <span class="badge bg-info text-dark"><i class="fa-solid fa-flag me-1"></i>{{ r.action }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if r.is_active %}
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Disabled</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="pe-4 text-end">
+                                            <div class="d-flex justify-content-end gap-2">
+                                                <a href="{{ url_for('toggle_rule_route', rule_id=r.id) }}" class="btn btn-sm btn-outline-secondary rounded-circle" title="Toggle Active">
+                                                    <i class="fa-solid fa-power-off"></i>
+                                                </a>
+                                                <a href="{{ url_for('delete_rule_route', rule_id=r.id) }}" class="btn btn-sm btn-outline-danger rounded-circle" onclick="return confirm('Delete policy?');" title="Delete Policy">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">No custom security policies deployed.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

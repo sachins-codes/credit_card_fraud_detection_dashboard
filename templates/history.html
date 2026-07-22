@@ -1,0 +1,282 @@
+{% extends 'layout.html' %}
+
+{% block title %}Transaction History - AI FraudGuard{% endblock %}
+
+{% block header_title %}Transaction Ledger{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="fw-bold mb-3"><i class="fa-solid fa-filter text-primary me-2"></i>Search & Advanced Filters</h5>
+        
+        <!-- Filters Form -->
+        <form method="GET" action="{{ url_for('history') }}" id="filterForm">
+            <div class="row g-3">
+                <!-- Search text -->
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label small fw-semibold">Search Query</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" name="search" class="form-control" placeholder="ID, Card, Merchant, City..." value="{{ search_query or '' }}">
+                    </div>
+                </div>
+                
+                <!-- Risk Level -->
+                <div class="col-lg-2 col-md-3 col-sm-6">
+                    <label class="form-label small fw-semibold">Risk Level</label>
+                    <select name="risk_level" class="form-select">
+                        <option value="">All Risks</option>
+                        <option value="CRITICAL" {% if filters.risk_level == 'CRITICAL' %}selected{% endif %}>Critical</option>
+                        <option value="HIGH" {% if filters.risk_level == 'HIGH' %}selected{% endif %}>High</option>
+                        <option value="MEDIUM" {% if filters.risk_level == 'MEDIUM' %}selected{% endif %}>Medium</option>
+                        <option value="LOW" {% if filters.risk_level == 'LOW' %}selected{% endif %}>Low</option>
+                    </select>
+                </div>
+                
+                <!-- Status -->
+                <div class="col-lg-2 col-md-3 col-sm-6">
+                    <label class="form-label small fw-semibold">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="Blocked" {% if filters.status == 'Blocked' %}selected{% endif %}>Blocked</option>
+                        <option value="Under Review" {% if filters.status == 'Under Review' %}selected{% endif %}>Under Review</option>
+                        <option value="Approved" {% if filters.status == 'Approved' %}selected{% endif %}>Approved</option>
+                    </select>
+                </div>
+
+                <!-- Device Type -->
+                <div class="col-lg-2 col-md-3 col-sm-6">
+                    <label class="form-label small fw-semibold">Device Type</label>
+                    <select name="device_type" class="form-select">
+                        <option value="">All Devices</option>
+                        <option value="Mobile" {% if filters.device_type == 'Mobile' %}selected{% endif %}>Mobile</option>
+                        <option value="Desktop" {% if filters.device_type == 'Desktop' %}selected{% endif %}>Desktop</option>
+                        <option value="Tablet" {% if filters.device_type == 'Tablet' %}selected{% endif %}>Tablet</option>
+                        <option value="Smart Watch" {% if filters.device_type == 'Smart Watch' %}selected{% endif %}>Smart Watch</option>
+                    </select>
+                </div>
+
+                <!-- Page Size -->
+                <div class="col-lg-2 col-md-3 col-sm-6">
+                    <label class="form-label small fw-semibold">Page Size</label>
+                    <select name="limit" class="form-select" onchange="document.getElementById('filterForm').submit();">
+                        <option value="10" {% if limit == 10 %}selected{% endif %}>10 rows</option>
+                        <option value="25" {% if limit == 25 %}selected{% endif %}>25 rows</option>
+                        <option value="50" {% if limit == 50 %}selected{% endif %}>50 rows</option>
+                        <option value="100" {% if limit == 100 %}selected{% endif %}>100 rows</option>
+                    </select>
+                </div>
+                
+                <!-- Min Amount -->
+                <div class="col-lg-2 col-md-3 col-sm-6">
+                    <label class="form-label small fw-semibold">Min Amount ($)</label>
+                    <input type="number" step="0.01" name="min_amount" class="form-control" placeholder="0.00" value="{{ filters.min_amount or '' }}">
+                </div>
+
+                <!-- Max Amount -->
+                <div class="col-lg-2 col-md-3 col-sm-6">
+                    <label class="form-label small fw-semibold">Max Amount ($)</label>
+                    <input type="number" step="0.01" name="max_amount" class="form-control" placeholder="10000.00" value="{{ filters.max_amount or '' }}">
+                </div>
+
+                <!-- Start Date -->
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <label class="form-label small fw-semibold">Start Date</label>
+                    <input type="date" name="start_date" class="form-control" value="{{ filters.start_date or '' }}">
+                </div>
+
+                <!-- End Date -->
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <label class="form-label small fw-semibold">End Date</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ filters.end_date or '' }}">
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4"><i class="fa-solid fa-filter me-2"></i>Apply Filters</button>
+                    <a href="{{ url_for('history') }}" class="btn btn-outline-secondary">Reset</a>
+                </div>
+                
+                <!-- Export Options -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-success dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa-solid fa-download me-2"></i>Export Options
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="exportDropdown">
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('export_data', format='csv', type='all', search=search_query, risk_level=filters.risk_level, status=filters.status, device_type=filters.device_type, min_amount=filters.min_amount, max_amount=filters.max_amount, start_date=filters.start_date, end_date=filters.end_date) }}">
+                                <i class="fa-solid fa-file-csv text-success me-2"></i>Export as CSV
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('export_data', format='excel', type='all', search=search_query, risk_level=filters.risk_level, status=filters.status, device_type=filters.device_type, min_amount=filters.min_amount, max_amount=filters.max_amount, start_date=filters.start_date, end_date=filters.end_date) }}">
+                                <i class="fa-solid fa-file-excel text-primary me-2"></i>Export as Excel
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Results Card -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header border-0 bg-transparent py-3">
+        <div class="d-flex align-items-center justify-content-between">
+            <h5 class="card-title fw-bold mb-0 text-body">
+                Transaction Logs <span class="badge bg-secondary-subtle text-secondary rounded-pill fw-semibold fs-7 ms-2">{{ total_count }} Entries</span>
+            </h5>
+            <small class="text-muted">Showing {{ offset + 1 }} - {{ offset + transactions|length if transactions else 0 }} of {{ total_count }} rows</small>
+        </div>
+    </div>
+    
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table align-middle table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Txn ID</th>
+                        <th>Cust ID</th>
+                        <th>Card Number</th>
+                        <th>Amount</th>
+                        <th>Location</th>
+                        <th>Device</th>
+                        <th>Prediction</th>
+                        <th>Risk Score</th>
+                        <th>Status</th>
+                        <th class="pe-4 text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if transactions %}
+                        {% for txn in transactions %}
+                            <tr {% if txn.prediction == 'Fraud' %}class="table-danger-subtle"{% endif %}>
+                                <td class="ps-4 fw-semibold text-body">
+                                    {% if txn.prediction == 'Fraud' %}
+                                        <a href="{{ url_for('investigate', transaction_id=txn.transaction_id) }}" class="text-decoration-none text-danger-emphasis">
+                                            {{ txn.transaction_id }}
+                                        </a>
+                                    {% else %}
+                                        {{ txn.transaction_id }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ txn.customer_id }}</td>
+                                <td><code>{{ txn.card_number }}</code></td>
+                                <td class="fw-bold">${{ "{:,.2f}".format(txn.amount) }}</td>
+                                <td>
+                                    {{ txn.city }}{% if txn.state and txn.state != 'N/A' %}, {{ txn.state }}{% endif %}<br>
+                                    <small class="text-muted">{{ txn.country }}</small>
+                                </td>
+                                <td>
+                                    {% if txn.device_type == 'Mobile' %}
+                                        <i class="fa-solid fa-mobile-screen text-muted me-1"></i>Mobile
+                                    {% elif txn.device_type == 'Desktop' %}
+                                        <i class="fa-solid fa-laptop text-muted me-1"></i>Desktop
+                                    {% elif txn.device_type == 'Tablet' %}
+                                        <i class="fa-solid fa-tablet-screen-button text-muted me-1"></i>Tablet
+                                    {% else %}
+                                        <i class="fa-solid fa-clock text-muted me-1"></i>Watch
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if txn.prediction == 'Fraud' %}
+                                        <span class="badge bg-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i>Fraud</span>
+                                    {% else %}
+                                        <span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i>Genuine</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="fw-semibold">{{ txn.risk_score }}</span>
+                                        <div class="progress w-100" style="height: 4px; min-width: 40px;">
+                                            {% set color = 'bg-success' %}
+                                            {% if txn.risk_score >= 90 %}
+                                                {% set color = 'bg-danger' %}
+                                            {% elif txn.risk_score >= 70 %}
+                                                {% set color = 'bg-warning' %}
+                                            {% elif txn.risk_score >= 40 %}
+                                                {% set color = 'bg-info' %}
+                                            {% endif %}
+                                            <div class="progress-bar {{ color }}" role="progressbar" style="width: {{ txn.risk_score }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if txn.status == 'Blocked' %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="fa-solid fa-ban me-1"></i>Blocked</span>
+                                    {% elif txn.status == 'Under Review' %}
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle"><i class="fa-solid fa-magnifying-glass me-1"></i>Review</span>
+                                    {% else %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="fa-solid fa-check me-1"></i>Approved</span>
+                                    {% endif %}
+                                </td>
+                                <td class="pe-4 text-end">
+                                    {% if txn.prediction == 'Fraud' %}
+                                        <a href="{{ url_for('investigate', transaction_id=txn.transaction_id) }}" class="btn btn-sm btn-danger rounded-pill px-3">
+                                            Investigate
+                                        </a>
+                                    {% else %}
+                                        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" disabled>Passed</button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="10" class="text-center py-5 text-muted">
+                                <i class="fa-solid fa-inbox fa-3x mb-3 text-muted opacity-50"></i>
+                                <p class="mb-0">No transactions match the search filters.</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Table Pagination -->
+    {% if total_pages > 1 %}
+        <div class="card-footer border-0 bg-transparent py-3 border-top">
+            <nav aria-label="Transactions navigation">
+                <ul class="pagination justify-content-center mb-0">
+                    <!-- First & Previous -->
+                    <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('history', page=1, search=search_query, risk_level=filters.risk_level, status=filters.status, device_type=filters.device_type, min_amount=filters.min_amount, max_amount=filters.max_amount, start_date=filters.start_date, end_date=filters.end_date, limit=limit) }}" aria-label="First">
+                            <i class="fa-solid fa-angles-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('history', page=page-1, search=search_query, risk_level=filters.risk_level, status=filters.status, device_type=filters.device_type, min_amount=filters.min_amount, max_amount=filters.max_amount, start_date=filters.start_date, end_date=filters.end_date, limit=limit) }}" aria-label="Previous">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    
+                    <!-- Page Number Ranges -->
+                    {% set start_page = [page - 2, 1] | max %}
+                    {% set end_page = [page + 2, total_pages] | min %}
+                    
+                    {% for p in range(start_page, end_page + 1) %}
+                        <li class="page-item {% if p == page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('history', page=p, search=search_query, risk_level=filters.risk_level, status=filters.status, device_type=filters.device_type, min_amount=filters.min_amount, max_amount=filters.max_amount, start_date=filters.start_date, end_date=filters.end_date, limit=limit) }}">{{ p }}</a>
+                        </li>
+                    {% endfor %}
+                    
+                    <!-- Next & Last -->
+                    <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('history', page=page+1, search=search_query, risk_level=filters.risk_level, status=filters.status, device_type=filters.device_type, min_amount=filters.min_amount, max_amount=filters.max_amount, start_date=filters.start_date, end_date=filters.end_date, limit=limit) }}" aria-label="Next">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('history', page=total_pages, search=search_query, risk_level=filters.risk_level, status=filters.status, device_type=filters.device_type, min_amount=filters.min_amount, max_amount=filters.max_amount, start_date=filters.start_date, end_date=filters.end_date, limit=limit) }}" aria-label="Last">
+                            <i class="fa-solid fa-angles-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

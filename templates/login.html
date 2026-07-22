@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AI FraudGuard SOC</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5.3.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-glow: #0d6efd;
+            --bg-cyber: #080c14;
+            --card-glass: rgba(15, 23, 42, 0.75);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-cyber);
+            color: #f8fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .login-wrapper {
+            min-height: 100vh;
+        }
+
+        /* Ambient Cyber Glow Backdrop */
+        .cyber-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(13, 110, 253, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(220, 53, 69, 0.12) 0%, transparent 50%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Left Hero Banner */
+        .left-banner {
+            position: relative;
+            z-index: 1;
+            padding: 4rem;
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(8, 12, 20, 0.8) 100%);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .shield-icon-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .shield-icon-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            background: rgba(13, 110, 253, 0.2);
+            border-radius: 50%;
+            filter: blur(25px);
+            z-index: -1;
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            position: relative;
+            z-index: 1;
+            background: var(--card-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            padding: 2.5rem;
+            max-width: 440px;
+            width: 100%;
+        }
+
+        .form-control {
+            background-color: rgba(30, 41, 59, 0.6) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: #f8fafc !important;
+            border-radius: 12px;
+            padding: 12px 16px;
+        }
+
+        .form-control:focus {
+            border-color: #0d6efd !important;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
+        }
+
+        .btn-glow {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-glow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(13, 110, 253, 0.6);
+        }
+
+        .badge-soc {
+            background: rgba(13, 110, 253, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            border-radius: 50px;
+            padding: 6px 14px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="cyber-grid"></div>
+
+<div class="container-fluid p-0 login-wrapper d-flex">
+    <div class="row g-0 w-100">
+        
+        <!-- Left Side: Interactive Security Operations Branding -->
+        <div class="col-lg-7 d-none d-lg-flex flex-column justify-content-between left-banner">
+            <div>
+                <span class="badge-soc">
+                    <i class="fa-solid fa-shield-virus me-2"></i>Enterprise Security Operations Center (SOC)
+                </span>
+            </div>
+
+            <div class="my-auto py-5">
+                <div class="shield-icon-wrapper mb-4">
+                    <i class="fa-solid fa-shield-halved display-1 text-primary"></i>
+                </div>
+                <h1 class="display-4 fw-extrabold mb-3">AI FraudGuard <span class="text-primary">India</span></h1>
+                <p class="lead text-slate-300 max-w-xl mb-4" style="max-width: 550px; color: #94a3b8;">
+                    Next-generation Credit Card & RuPay Fraud Intelligence powered by a 4-Model ML Ensemble (Random Forest, Decision Tree, Logistic Regression, and Isolation Forest Unsupervised Anomaly Detection).
+                </p>
+
+                <div class="d-flex gap-4 pt-3">
+                    <div class="border-start border-primary border-3 ps-3">
+                        <h4 class="fw-bold mb-0 text-white">30,050+</h4>
+                        <small class="text-muted">Live Ledger Logs</small>
+                    </div>
+                    <div class="border-start border-primary border-3 ps-3">
+                        <h4 class="fw-bold mb-0 text-white">4 Models</h4>
+                        <small class="text-muted">Ensemble Diagnostics</small>
+                    </div>
+                    <div class="border-start border-primary border-3 ps-3">
+                        <h4 class="fw-bold mb-0 text-white">Real-Time</h4>
+                        <small class="text-muted">Explainable AI (XAI)</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between text-muted small">
+                <span>&copy; 2026 AI FraudGuard SOC Inc. All Rights Reserved.</span>
+                <span>ISO/IEC 27001 Certified Platform</span>
+            </div>
+        </div>
+
+        <!-- Right Side: Glassmorphism Login Card -->
+        <div class="col-lg-5 d-flex align-items-center justify-content-center p-4">
+            <div class="glass-card">
+                
+                <div class="text-center mb-4">
+                    <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <i class="fa-solid fa-user-shield fa-2xl"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">SOC Administrator Login</h3>
+                    <p class="text-muted small">Enter your credentials to access the command center</p>
+                </div>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <div class="alert alert-danger border-0 bg-danger-subtle text-danger small rounded-3 mb-4" role="alert">
+                            <i class="fa-solid fa-circle-exclamation me-2"></i>{{ messages[0] }}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST">
+                    <!-- Username -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-slate-300">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="fa-solid fa-user"></i></span>
+                            <input type="text" name="username" id="usernameInput" class="form-control border-start-0" placeholder="admin" required autofocus>
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold text-slate-300">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="fa-solid fa-lock"></i></span>
+                            <input type="password" name="password" id="passwordInput" class="form-control border-start-0 border-end-0" placeholder="••••••••" required>
+                            <button type="button" id="togglePassword" class="input-group-text bg-transparent border-start-0 text-muted">
+                                <i class="fa-solid fa-eye" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 1-Click Demo Fill Assistant -->
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="rememberMe" checked>
+                            <label class="form-check-label small text-muted" for="rememberMe">Remember session</label>
+                        </div>
+                        <button type="button" id="fillDemoBtn" class="btn btn-link btn-sm text-primary text-decoration-none p-0">
+                            <i class="fa-solid fa-key me-1"></i>Fill Demo Credentials
+                        </button>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary btn-glow w-100 text-white">
+                        <i class="fa-solid fa-right-to-bracket me-2"></i>Authenticate & Launch SOC
+                    </button>
+                </form>
+
+                <div class="mt-4 pt-3 border-top border-secondary-subtle text-center">
+                    <small class="text-muted">Default Administrator: <code class="text-primary">admin / admin123</code></small>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const passwordInput = document.getElementById('passwordInput');
+    const togglePasswordBtn = document.getElementById('togglePassword');
+    const eyeIcon = document.getElementById('eyeIcon');
+    const fillDemoBtn = document.getElementById('fillDemoBtn');
+    const usernameInput = document.getElementById('usernameInput');
+
+    // Password Eye Toggle
+    togglePasswordBtn.addEventListener('click', () => {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        eyeIcon.className = type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
+    });
+
+    // 1-Click Demo Credentials Auto-Fill Assistant
+    fillDemoBtn.addEventListener('click', () => {
+        usernameInput.value = 'admin';
+        passwordInput.value = 'admin123';
+        fillDemoBtn.innerHTML = '<i class="fa-solid fa-check me-1 text-success"></i>Filled!';
+        setTimeout(() => {
+            fillDemoBtn.innerHTML = '<i class="fa-solid fa-key me-1"></i>Fill Demo Credentials';
+        }, 2000);
+    });
+});
+</script>
+</body>
+</html>
